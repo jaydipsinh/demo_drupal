@@ -1,0 +1,13 @@
+services:
+  remove_x_frame_options_subscriber:
+    class: Drupal\general_section\EventSubscriber\RemoveXFrameOptionsSubscriber
+    tags:
+      - { name: event_subscriber }
+  header_response_subscriber:
+    class: Drupal\general_section\EventSubscriber\HeaderResponseSubscriber
+    tags:
+      - { name: event_subscriber }
+  general_section.twig.TwigExtension:
+    class: Drupal\general_section\TwigExtension
+    tags:
+      - {name: twig.extension}

@@ -1,0 +1,58 @@
+<?php
+
+/**
+ * @file
+ * (Un)installs the Shorten URLs Custom Services module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function shorten_cs_schema() {
+  $schema = [];
+  $schema['shorten_cs'] = [
+    'description' => 'Stores custom services for the Shorten URLs module.',
+    'fields' => [
+      'sid' => [
+        'type' => 'serial',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'description' => 'The Service ID.',
+      ],
+      'name' => [
+        'type' => 'varchar',
+        'length' => 190,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The name of the URL shortening service.',
+      ],
+      'url' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The API endpoint URL.',
+      ],
+      'type' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The type of API response.',
+      ],
+      'tag' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The XML tag or JSON key identifying the shortened URL from the API response, if applicable.',
+      ],
+    ],
+    'indexes' => [],
+    'unique keys' => [
+      'name' => ['name'],
+    ],
+    'primary key' => ['sid'],
+  ];
+  return $schema;
+}

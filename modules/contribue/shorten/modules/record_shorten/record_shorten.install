@@ -1,0 +1,81 @@
+<?php
+
+/**
+ * @file
+ * Records shortened URLs.
+ */
+
+use Drupal\Core\Database\Database;
+
+/**
+ * Implements hook_schema().
+ */
+function record_shorten_schema() {
+  $schema = [];
+  $schema['record_shorten'] = [
+    'description' => 'Records shortened URLs.',
+    'fields' => [
+      'sid' => [
+        'type' => 'serial',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'description' => 'The ID of the shortened URL.',
+      ],
+      'original' => [
+        'type' => 'varchar',
+        'length' => 1024,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The original (long) URL.',
+      ],
+      'short' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The new (short) URL.',
+      ],
+      'service' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The service used to shorten the URL.',
+      ],
+      'uid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The User ID of the user who created the shortened URL.',
+      ],
+      'hostname' => [
+        'description' => 'The IP address of the user who created the shortened URL.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'created' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The time the shortened URL was created.',
+      ],
+    ],
+    'indexes' => [
+      'sid' => ['sid'],
+    ],
+    'primary key' => ['sid'],
+  ];
+  return $schema;
+}
+
+/**
+ * Increase the length of `original` field.
+ */
+function record_shorten_update_8001() {
+  $schema = drupal_get_module_schema('record_shorten', 'record_shorten');
+  $schema['fields']['original']['length'] = 1024;
+  Database::getConnection()->schema()->changeField('record_shorten', 'original', 'original', $schema['fields']['original']);
+}

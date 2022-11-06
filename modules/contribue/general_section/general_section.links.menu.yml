@@ -1,0 +1,5 @@
+general_section.set_admin:
+  title: 'general_section'
+  description: 'General section module for multi purpose.'
+  weight: -10
+  route_name: general_section.set_admin

@@ -1,0 +1,15 @@
+{
+    "name": "drupal/shorten",
+    "type": "drupal-module",
+    "description": "Allows easy URL shortening via external services.",
+    "keywords": ["Drupal"],
+    "license": "GPL-2.0-or-later",
+    "homepage": "https://www.drupal.org/project/shorten",
+    "support": {
+        "issues": "https://www.drupal.org/project/issues/shorten",
+        "source": "https://git.drupalcode.org/project/shorten"
+    },
+    "require": {
+        "drupal/core": "^8.0 || ^9.0"
+    }
+}

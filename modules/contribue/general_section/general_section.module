@@ -1,0 +1,98 @@
+<?php 
+use \Drupal\node\Entity\Node;
+use \Drupal\Core\Form\FormStateInterface;
+use \Drupal\Core\Ajax\AjaxResponse;
+use \Drupal\Core\Ajax\HtmlCommand;
+use \Drupal\Core\Ajax\RedirectCommand;
+use \Drupal\Core\Mail\MailManagerInterface;
+use \Drupal\Component\Utility\SafeMarkup;
+use \Drupal\Component\Utility\Html;
+use \Drupal\user\UserInterface;
+use \Drupal\Core\Url;
+use \Drupal\encrypt\Entity\EncryptionProfile;
+use \Drupal\Core\Entity\EntityInterface;
+use \Drupal\views\ViewExecutable;
+use \Drupal\views\Plugin\views\query\QueryPluginBase;
+use \Drupal\Core\File;
+use \Drupal\Core\File\MimeType;
+use \Drupal\Core\File\MimeType\ExtensionMimeTypeGuesser;
+use \Drupal\Core\File\MimeType\MimeTypeGuesser;
+use Symfony\Component\HttpFoundation\Request;
+use Drupal\Core\Routing\TrustedRedirectResponse;
+
+
+function general_section_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id){
+   if($form_id == "node_short_link_form"){ 
+		$form['actions']['submit']['#submit'][] = '_short_custom_redirect';
+   }
+}
+function _short_custom_redirect(array &$form, FormStateInterface $form_state){ 
+  
+  global $base_url;
+   $nid = $form_state->getValue('nid');
+
+	$node = Node::load($nid);
+	//set value for field
+	$node->field_short_url->value = $base_url.'/adwbly'.$nid;
+	$node->field_qr_codes->value = 'addweb'.$nid.'-'.time();
+	//$node->field_no_of_user_redirect->value = 1;
+	//save to update node
+	$node->save();
+	//exit('success..');
+}
+
+function general_section_page_not_found($path = NULL) {
+}
+
+function general_section_preprocess_page(&$variables){	
+	/*
+	$nid = '';
+	$node = \Drupal::routeMatch()->getParameter('node');
+	if ($node instanceof \Drupal\node\NodeInterface) {
+	  // You can get nid and anything else you need from the node object.
+	  echo $nid = $node->id();
+	}
+	/*
+	echo 'qqqqqqqqq';
+    global $base_path; 
+    unset($_SESSION['_symfony_flashes']['status'][0]);
+    drupal_set_message(t("Your feedback submitted successfully."),'status');
+    $url = $base_path.'/node';
+    $response = new Symfony\Component\HttpFoundation\RedirectResponse($url);
+    $response->send();
+	*/
+}
+
+function general_section_entity_presave(Drupal\Core\Entity\EntityInterface $entity) {
+	//echo '<pre>';print_r($entity->toArray());exit;
+	global $user;
+	$user = \Drupal::currentUser();
+	$uid = $user->id();
+	$roles = $user->getRoles();
+	if($entity->getEntityType()->id() == "node" && $roles[1] == "administrator"){
+		if($entity->id() != "" && $entity->getType() == "feedback"){
+			$field_status_feedback = trim($entity->get('field_status_feedback')->target_id);
+			
+			if($field_status_feedback != ""){
+				$term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($field_status_feedback);
+                $nameTerm = $term->label();
+				if($field_status_feedback == 364 && $nameTerm == "Approve"){
+					$entity->status->value = 1;
+				}
+				
+			}
+		}
+	}
+}
+function _feedback_custom_redirect(array &$form, FormStateInterface $form_state){    
+    /*global $base_path; 
+    unset($_SESSION['_symfony_flashes']['status'][0]);
+    drupal_set_message(t("Your feedback submitted successfully."),'status');
+    $url = $base_path.'/node/add/feedback';
+    $response = new Symfony\Component\HttpFoundation\RedirectResponse($url);
+    $response->send();*/
+}
+
+
+
+?>

@@ -1,0 +1,80 @@
+<?php
+
+/**
+ * @file
+ * Records shortened URLs.
+ */
+
+use Drupal\Component\Utility\Html;
+
+/**
+ * Implements hook_theme().
+ */
+function record_shorten_theme($existing, $type, $theme, $path) {
+  return [
+    'record_shorten_records' => [
+      'variables' => [],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_shorten_create().
+ */
+function record_shorten_shorten_create($old, $new, $service) {
+  $array = [
+    'original' => $old,
+    'short' => $new,
+    'service' => $service,
+    'uid' => \Drupal::currentUser()->id(),
+    'hostname' => \Drupal::request()->getClientIp(),
+    'created' => \Drupal::time()->getRequestTime(),
+  ];
+  // @TODO : This creates duplicate records. Needs to be fixed.
+  \Drupal::database()->merge('record_shorten')
+    ->key($array)
+    ->fields($array)
+    ->execute();
+}
+
+/**
+ * Builds a list of shortened URLs.
+ */
+function record_shorten_records_table() {
+  // @TODO : Views display plugin needs to be fixed.
+  // if (\Drupal::moduleHandler()->moduleExists('views')) {
+  //   return views_embed_view('record_shorten', 'default');
+  // }
+  $header = [t('Original'), t('Short'), t('Service')];
+  $rows = [];
+  // SELECT original, short, service FROM {record_shorten} ORDER BY sid DESC.
+  $result = \Drupal::database()->select('record_shorten', 'rs')
+    ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+    ->limit(10)
+    ->fields('rs', ['original', 'short', 'service'])
+    ->orderBy('rs.sid', 'DESC')
+    ->execute();
+  foreach ($result as $row) {
+    // Sigh... DBTNG doesn't have a ->fetchAsNonAssocArray()
+    $rows[] = [Html::escape($row->original), Html::escape($row->short), Html::escape($row->service)];
+  }
+  $table = [
+    '#type' => 'table',
+    '#header' => $header,
+    '#rows' => $rows,
+  ];
+  // Render Table.
+  $output = \Drupal::service('renderer')->render($table);
+  // Finally add Pager.
+  $pager = ['#type' => 'pager'];
+  $output .= \Drupal::service('renderer')->render($pager);
+
+  return $output;
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function record_shorten_views_api() {
+  return ['api' => 3];
+}

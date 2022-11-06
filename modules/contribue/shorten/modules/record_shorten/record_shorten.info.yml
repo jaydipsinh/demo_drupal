@@ -1,0 +1,14 @@
+name: 'Record Shorten'
+description: 'Records shortened URLs from the Shorten module.'
+core: 8.x
+core_version_requirement: ^8 || ^9
+package: 'Shorten URLs'
+dependencies:
+  - shorten:shorten
+type: module
+configure: record_shorten.theme_record_shorten_records
+
+# Information added by Drupal.org packaging script on 2022-03-04
+version: '8.x-2.x-dev'
+project: 'shorten'
+datestamp: 1646402695

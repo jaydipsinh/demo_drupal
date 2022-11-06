@@ -1,0 +1,94 @@
+<?php
+
+/**
+ * @file
+ * Allows users to specify custom services for the Shorten URLs module.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function shorten_cs_menu() {
+  $items = [];
+  $items['admin/config/services/shorten/custom'] = [
+    'title' => 'Custom services',
+    'description' => 'Specify information about any service to expose it to Shorten URLs.',
+    'page callback' => 'theme',
+    'page arguments' => ['shorten_cs_admin'],
+    'access arguments' => ['administer Shorten URLs custom services'],
+    'type' => MENU_LOCAL_TASK,
+  ];
+  $items['admin/config/services/shorten/custom/edit/%shorten_cs'] = [
+    'title' => 'Edit custom service',
+    'page callback' => 'shortenCsEditForm',
+    'page arguments' => [6],
+    'access arguments' => ['administer Shorten URLs custom services'],
+    'type' => MENU_CALLBACK,
+    'file' => 'shorten_cs.admin.inc',
+  ];
+  $items['admin/config/services/shorten/custom/delete/%shorten_cs'] = [
+    'title' => 'Custom services',
+    'page callback' => 'shortenCsDeleteForm',
+    'page arguments' => [6],
+    'access arguments' => ['administer Shorten URLs custom services'],
+    'type' => MENU_CALLBACK,
+    'file' => 'shorten_cs.admin.inc',
+  ];
+  return $items;
+}
+
+/**
+ * Implements hook_shorten_service().
+ */
+function shorten_cs_shorten_service() {
+  $result = \Drupal::database()->query("SELECT * FROM {shorten_cs}")->fetchAll();
+  $services = [];
+  foreach ($result as $service) {
+    $services[$service->name] = [
+      'custom' => $service->type == 'text' ? FALSE : $service->type,
+      'url' => $service->url,
+    ];
+    if ($service->type == 'xml') {
+      $services[$service->name]['tag'] = $service->tag;
+    }
+    elseif ($service->type == 'json') {
+      $services[$service->name]['json'] = $service->tag;
+    }
+  }
+  return $services;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function shorten_cs_theme($existing, $type, $theme, $path) {
+  return [
+    'shorten_cs_admin' => [
+      'arguments' => [],
+      'file' => 'shorten_cs.admin.inc',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_perm().
+ */
+function shorten_cs_permission() {
+  return [
+    // This permission allows tricking users into visiting a malicious site,
+    // so it is designated as "restricted access".
+    'administer Shorten URLs custom services' => [
+      'title' => t('Administer custom services'),
+      'description' => t('Add and remove custom URL shortening services.'),
+      'restrict access' => TRUE,
+    ],
+  ];
+}
+
+/**
+ * Loads a custom service object.
+ */
+function shorten_cs_load($sid) {
+  return \Drupal::database()->query("SELECT * FROM {shorten_cs} WHERE sid = :sid", [':sid' => $sid])
+    ->fetchObject();
+}
