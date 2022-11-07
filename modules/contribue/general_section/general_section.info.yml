@@ -1,6 +1,6 @@
 name: General Section
 type: module
-description: General Queries Solution by STTL
+description: General Queries
 package: custom
 core: 8.x
 

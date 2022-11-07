@@ -19,21 +19,41 @@ use \Drupal\Core\File\MimeType\ExtensionMimeTypeGuesser;
 use \Drupal\Core\File\MimeType\MimeTypeGuesser;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\Core\Routing\TrustedRedirectResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
+
+function general_section_init() {
+    drupal_add_http_header('X-Frame-Options', 'SAMEORIGIN');
+    drupal_add_http_header('Access-Control-Allow-Credentials','true');
+    drupal_add_http_header('Access-Control-Allow-Origin','*');
+    drupal_add_http_header('Access-Control-Request-Headers','content-type,session_name,X-CSRF-token,Cookie');
+    
+    drupal_add_http_header('Cache-Control', 'no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0');
+    drupal_add_http_header('Pragma', 'no-cache');
+    drupal_add_http_header('Expires: Thu, 19 Nov 1981 08:52:00 GMT', '');
+}
 
 function general_section_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id){
    if($form_id == "node_short_link_form"){ 
+		//short link paptch for update node data
 		$form['actions']['submit']['#submit'][] = '_short_custom_redirect';
    }
 }
+
+function my_goto($path) { 
+  $response = new RedirectResponse($path);
+  $response->send();
+  return;
+}
+
 function _short_custom_redirect(array &$form, FormStateInterface $form_state){ 
   
-  global $base_url;
-   $nid = $form_state->getValue('nid');
+	global $base_url;
+	$nid = $form_state->getValue('nid');
 
 	$node = Node::load($nid);
 	//set value for field
-	$node->field_short_url->value = $base_url.'/adwbly'.$nid;
+	$node->field_short_url->value = $base_url.'/adwbly/'.$nid;
 	$node->field_qr_codes->value = 'addweb'.$nid.'-'.time();
 	//$node->field_no_of_user_redirect->value = 1;
 	//save to update node
@@ -41,10 +61,8 @@ function _short_custom_redirect(array &$form, FormStateInterface $form_state){
 	//exit('success..');
 }
 
-function general_section_page_not_found($path = NULL) {
-}
+function general_section_preprocess_page(&$variables){
 
-function general_section_preprocess_page(&$variables){	
 	/*
 	$nid = '';
 	$node = \Drupal::routeMatch()->getParameter('node');
@@ -64,7 +82,6 @@ function general_section_preprocess_page(&$variables){
 }
 
 function general_section_entity_presave(Drupal\Core\Entity\EntityInterface $entity) {
-	//echo '<pre>';print_r($entity->toArray());exit;
 	global $user;
 	$user = \Drupal::currentUser();
 	$uid = $user->id();
@@ -84,15 +101,6 @@ function general_section_entity_presave(Drupal\Core\Entity\EntityInterface $enti
 		}
 	}
 }
-function _feedback_custom_redirect(array &$form, FormStateInterface $form_state){    
-    /*global $base_path; 
-    unset($_SESSION['_symfony_flashes']['status'][0]);
-    drupal_set_message(t("Your feedback submitted successfully."),'status');
-    $url = $base_path.'/node/add/feedback';
-    $response = new Symfony\Component\HttpFoundation\RedirectResponse($url);
-    $response->send();*/
-}
-
 
 
 ?>
